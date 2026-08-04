@@ -9,6 +9,7 @@
 #include "main.h"
 #include "stm32f0xx.h"
 #include <stdint.h>
+#include <lcd_stm32f0.h>
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim16;
@@ -51,20 +52,17 @@ void update_led_pattern(void)
     // 3. Update the current_led index based on direction
     // 4. Handle direction reversal at the edges (without duplicating states)
 
-	turn_off_all_leds(); // 1.
+	turn_off_all_leds();
 
-	uint8_t i;
-	for (i = 0; i < 8; i += direction){
-		HAL_GPIO_WritePin(led_ports[0], led_pins[i], GPIO_PIN_SET);
+	HAL_GPIO_WritePin(led_ports[0], led_pins[current_led], GPIO_PIN_SET);
+	current_led += direction; // fix bug for both directions
 
-		if (i == 7){
-			i--; // prevent duplicates
-			direction = -1;
-		}
-		if (i == 0){
-			i++; // prevent duplicates
-			direction = 1;
-		}
+	if (current_led == 7){ // prevent duplicates
+		direction = -1;
+	}
+
+	if (current_led == 0 && direction == -1){ // prevent duplicates
+		direction = 1;
 	}
 
 }
@@ -80,11 +78,12 @@ int main(void)
     SystemClock_Config();
     MX_GPIO_Init();
     MX_TIM16_Init();
+    init_LCD();
 
     /* USER CODE BEGIN 2 */
     // Ensure all LEDs are off at start
     turn_off_all_leds();
-
+    lcd_putstring("Task 2 ez");
     // Start the timer interrupt
     HAL_TIM_Base_Start_IT(&htim16);
     /* USER CODE END 2 */
