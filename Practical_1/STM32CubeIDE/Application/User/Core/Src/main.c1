@@ -57,9 +57,9 @@ void TIM16_IRQHandler(void);
   * @retval int
   */
 int main(void){
-  init_LCD();
   HAL_Init();
   SystemClock_Config();
+  init_LCD();
 
   MX_GPIO_Init();
   MX_TIM16_Init();
@@ -121,7 +121,7 @@ static void MX_GPIO_Init(void)
 {
 /*Insert PB0 initialization code*/
 	// Section 21.2.2 of user manual
-	__HAL_RCC_GPIOA_CLK_ENABLE(); // Enable the clock
+	__HAL_RCC_GPIOB_CLK_ENABLE(); // Enable the clock
 	GPIO_InitTypeDef GPIO_InitStruct = {0};
 
 	GPIO_InitStruct.Pin = LED0;
@@ -131,7 +131,7 @@ static void MX_GPIO_Init(void)
 
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct); // intialize the pin
 
-	lcd_putstring("GPIO Initialised ...");
+	lcd_putstring("GPIO Initialised");
 
 }
 
@@ -141,10 +141,11 @@ static void MX_GPIO_Init(void)
 void TIM16_IRQHandler(void)
 {
 /*Toggle the pin*/
+	HAL_TIM_IRQHandler(&htim16); // clear flag
 	HAL_GPIO_TogglePin(GPIOB, LED0);
 
-	lcd_command(TWOLINE_MODE);
-	lcd_putstring("Toggled LED0");
+	lcd_command(LINE_TWO);
+	lcd_putstring("LED0 Toggled");
 }
 
 /**

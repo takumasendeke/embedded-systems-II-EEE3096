@@ -1,158 +1,161 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
+  @file           : main.c
+  @brief          : Running light with timer interrupt skeleton
   */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
-/* Private includes ----------------------------------------------------------*/
 #include "stm32f0xx.h"
 #include <stdint.h>
-#include "lcd_stm32f0.h"
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim16;
 
 /* USER CODE BEGIN PV */
-// LED toggle pin (PB0 = LED0)
+volatile uint8_t timer_event = 0;    // Flag to be set by ISR and polled in main loop
+volatile uint8_t current_led = 0;    // Track current LED index (0..7)
+volatile int8_t direction = 1;       // Track direction (+1 for forward, -1 for backward)
 
-/*Define the LED*/
-uint16_t LED0 = GPIO_PIN_0;
-
+// LED port/pin arrays for easy indexing
+GPIO_TypeDef* led_ports[8] = {GPIOB, GPIOB, GPIOB, GPIOB, GPIOB, GPIOB, GPIOB, GPIOB};
+uint16_t led_pins[8] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3, GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM16_Init(void);
-
-/* USER CODE BEGIN PFP */
 void TIM16_IRQHandler(void);
-/* USER CODE END PFP */
+void turn_off_all_leds(void);
+void update_led_pattern(void);
 
-/* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void turn_off_all_leds(void)
+{
+    /* TODO: Iterate through the LED arrays and turn off all LEDs */
+
+}
+
+void update_led_pattern(void)
+{
+    /* TODO: Implement the running light pattern logic */
+    // 1. Turn off all LEDs
+    // 2. Turn on the current LED
+    // 3. Update the current_led index based on direction
+    // 4. Handle direction reversal at the edges (without duplicating states)
+
+}
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void){
-  HAL_Init();
-  SystemClock_Config();
-  init_LCD();
+  @brief  The application entry point.
+  @retval int
+*/
+int main(void)
+{
+    HAL_Init();
+    SystemClock_Config();
+    MX_GPIO_Init();
+    MX_TIM16_Init();
 
-  MX_GPIO_Init();
-  MX_TIM16_Init();
+    /* USER CODE BEGIN 2 */
+    // Ensure all LEDs are off at start
+    turn_off_all_leds();
 
-  /* USER CODE BEGIN 2 */
-  // Start TIM16 in interrupt mode
-  HAL_TIM_Base_Start_IT(&htim16);
-  /* USER CODE END 2 */
+    // Start the timer interrupt
+    HAL_TIM_Base_Start_IT(&htim16);
+    /* USER CODE END 2 */
 
-  while (1){
-    // Main loop does nothing – all work is in the ISR
-  }
+    while (1)
+    {
+        /* USER CODE BEGIN WHILE */
+        /* TODO: Check if the timer_event flag is set.
+                 If so, clear the flag and call the function to update the LED pattern. */
+
+        /* USER CODE END WHILE */
+    }
 }
 
 /**
-  * @brief System Clock Configuration (HSI 8 MHz)
-  */
-void SystemClock_Config(void){
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
-  while(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_0) {}
+  @brief System Clock Configuration (HSI 8 MHz)
+*/
+void SystemClock_Config(void)
+{
+    LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
+    while(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_0) {}
 
-  LL_RCC_HSI_Enable();
-  while(LL_RCC_HSI_IsReady() != 1) {}
+    LL_RCC_HSI_Enable();
+    while(LL_RCC_HSI_IsReady() != 1) {}
 
-  LL_RCC_HSI_SetCalibTrimming(16);
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {}
+    LL_RCC_HSI_SetCalibTrimming(16);
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {}
 
-  LL_SetSystemCoreClock(8000000);
-  if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK) {
-    Error_Handler();
-  }
+    LL_SetSystemCoreClock(8000000);
+
+    if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
 /**
-  * @brief TIM16 Initialization|
-  * Insert your calculated values
-  */
-static void MX_TIM16_Init(void){
-  htim16.Instance = TIM16;
-  htim16.Init.Prescaler = 8000 - 1;// Calculated PSC value
-  htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim16.Init.Period = 1000 - 1; // Calculated ARR value
-  htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim16.Init.RepetitionCounter = 0;
-  htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim16) != HAL_OK) {
-    Error_Handler();
-  }
-  NVIC_EnableIRQ(TIM16_IRQn);
+  @brief TIM16 Initialization – Corrected for 1-second interrupt
+*/
+static void MX_TIM16_Init(void)
+{
+    htim16.Instance = TIM16;
+    htim16.Init.Prescaler = 7999;
+    htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim16.Init.Period = 999;
+    htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim16.Init.RepetitionCounter = 0;
+    htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+    if (HAL_TIM_Base_Init(&htim16) != HAL_OK) {
+        Error_Handler();
+    }
+
+    NVIC_EnableIRQ(TIM16_IRQn);
 }
 
 /**
-  * @brief GPIO Initialization – PB0 as output (LED0)
-  */
+  @brief GPIO Initialization – PB0..PB7 as outputs for LEDs
+*/
 static void MX_GPIO_Init(void)
 {
-/*Insert PB0 initialization code*/
-	// Section 21.2.2 of user manual
-	__HAL_RCC_GPIOB_CLK_ENABLE(); // Enable the clock
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-	GPIO_InitStruct.Pin = LED0;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct); // intialize the pin
-
-	lcd_putstring("GPIO Initialised");
-
+    // Configure all 8 pins (PB0 to PB7)
+    for (uint8_t i = 0; i < 8; i++) {
+        GPIO_InitStruct.Pin = led_pins[i];
+        HAL_GPIO_Init(led_ports[i], &GPIO_InitStruct);
+    }
 }
 
 /**
-  * @brief TIM16 interrupt handler – toggles PB0 each time
-  */
+  @brief TIM16 interrupt handler
+*/
 void TIM16_IRQHandler(void)
 {
-/*Toggle the pin*/
-	HAL_TIM_IRQHandler(&htim16); //
-	HAL_GPIO_TogglePin(GPIOB, LED0);
+    HAL_TIM_IRQHandler(&htim16);   // Clears the update flag
+    /* TODO: Set the global timer_event flag to signal the main loop */
 
-	lcd_command(LINE_TWO);
-	lcd_putstring("LED0 Toggled");
 }
 
 /**
-  * @brief Error handler
-  */
+  @brief Error handler
+*/
 void Error_Handler(void)
 {
-  __disable_irq();
-  while (1) {}
+    __disable_irq();
+    while (1) {}
 }
