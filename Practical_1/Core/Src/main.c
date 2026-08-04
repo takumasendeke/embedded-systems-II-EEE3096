@@ -51,12 +51,20 @@ void update_led_pattern(void)
     // 3. Update the current_led index based on direction
     // 4. Handle direction reversal at the edges (without duplicating states)
 
+	turn_off_all_leds(); // 1.
+
 	for (i = 0; i < 8; i += direction){
-			if (i == 7){ direction = -1;}
-			if (i == 0){ direction = 1; }
+		HAL_GPIO_WritePin(led_ports[0], led_pins[i], GPIO_PIN_SET);
 
-
+		if (i == 7){
+			i--; // prevent duplicates
+			direction = -1;
 		}
+		if (i == 0){
+			i++; // prevent duplicates
+			direction = 1;
+		}
+	}
 
 }
 /* USER CODE END 0 */
