@@ -137,7 +137,7 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_ll_utils.c</locationURI>
 		</link>
 		<link>
-			<name>Application/User/Core/Src/main.c0</name>
+			<name>Application/User/Core/Src/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/main.c</locationURI>
 		</link>
