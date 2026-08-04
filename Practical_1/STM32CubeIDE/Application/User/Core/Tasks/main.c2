@@ -9,6 +9,7 @@
 #include "main.h"
 #include "stm32f0xx.h"
 #include <stdint.h>
+#include <lcd_stm32f0.h>
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim16;
@@ -35,7 +36,12 @@ void update_led_pattern(void);
 void turn_off_all_leds(void)
 {
     /* TODO: Iterate through the LED arrays and turn off all LEDs */
-    
+	uint8_t i;
+	for (i = 0; i < 8; i++){
+		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
+	}
+
+
 }
 
 void update_led_pattern(void)
@@ -45,7 +51,20 @@ void update_led_pattern(void)
     // 2. Turn on the current LED
     // 3. Update the current_led index based on direction
     // 4. Handle direction reversal at the edges (without duplicating states)
-    
+
+	turn_off_all_leds();
+
+	HAL_GPIO_WritePin(led_ports[current_led], led_pins[current_led], GPIO_PIN_SET);
+	current_led += direction; // fix bug for both directions
+
+	if (current_led == 7){ // prevent duplicates
+		direction = -1;
+	}
+
+	if (current_led == 0 && direction == -1){ // prevent duplicates
+		direction = 1;
+	}
+
 }
 /* USER CODE END 0 */
 
@@ -59,11 +78,14 @@ int main(void)
     SystemClock_Config();
     MX_GPIO_Init();
     MX_TIM16_Init();
+    init_LCD();
 
     /* USER CODE BEGIN 2 */
     // Ensure all LEDs are off at start
     turn_off_all_leds();
-
+    lcd_putstring("Task 2");
+    lcd_command(LINE_TWO);
+    lcd_putstring("LED Pattern");
     // Start the timer interrupt
     HAL_TIM_Base_Start_IT(&htim16);
     /* USER CODE END 2 */
@@ -73,6 +95,10 @@ int main(void)
         /* USER CODE BEGIN WHILE */
         /* TODO: Check if the timer_event flag is set.
                  If so, clear the flag and call the function to update the LED pattern. */
+    	if (timer_event == 1){
+    		timer_event = 0;
+    		update_led_pattern();
+    	}
 
         /* USER CODE END WHILE */
     }
@@ -85,18 +111,18 @@ void SystemClock_Config(void)
 {
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_0);
     while(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_0) {}
-    
+
     LL_RCC_HSI_Enable();
     while(LL_RCC_HSI_IsReady() != 1) {}
-    
+
     LL_RCC_HSI_SetCalibTrimming(16);
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
     while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {}
-    
+
     LL_SetSystemCoreClock(8000000);
-    
+
     if (HAL_InitTick(TICK_INT_PRIORITY) != HAL_OK) {
         Error_Handler();
     }
@@ -108,17 +134,17 @@ void SystemClock_Config(void)
 static void MX_TIM16_Init(void)
 {
     htim16.Instance = TIM16;
-    htim16.Init.Prescaler = 7999;     
+    htim16.Init.Prescaler = 7999;
     htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim16.Init.Period = 999;          
+    htim16.Init.Period = 999;
     htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim16.Init.RepetitionCounter = 0;
     htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-    
+
     if (HAL_TIM_Base_Init(&htim16) != HAL_OK) {
         Error_Handler();
     }
-    
+
     NVIC_EnableIRQ(TIM16_IRQn);
 }
 
@@ -129,11 +155,11 @@ static void MX_GPIO_Init(void)
 {
     __HAL_RCC_GPIOB_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    
+
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    
+
     // Configure all 8 pins (PB0 to PB7)
     for (uint8_t i = 0; i < 8; i++) {
         GPIO_InitStruct.Pin = led_pins[i];
@@ -148,7 +174,8 @@ void TIM16_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim16);   // Clears the update flag
     /* TODO: Set the global timer_event flag to signal the main loop */
-    
+    timer_event = 1;
+
 }
 
 /**
