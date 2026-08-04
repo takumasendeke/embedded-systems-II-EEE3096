@@ -38,7 +38,7 @@ void turn_off_all_leds(void)
     /* TODO: Iterate through the LED arrays and turn off all LEDs */
 	uint8_t i;
 	for (i = 0; i < 8; i++){
-		HAL_GPIO_WritePin(led_ports[0], led_pins[i], GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
 	}
 
 
@@ -54,7 +54,7 @@ void update_led_pattern(void)
 
 	turn_off_all_leds();
 
-	HAL_GPIO_WritePin(led_ports[0], led_pins[current_led], GPIO_PIN_SET);
+	HAL_GPIO_WritePin(led_ports[current_led], led_pins[current_led], GPIO_PIN_SET);
 	current_led += direction; // fix bug for both directions
 
 	if (current_led == 7){ // prevent duplicates
@@ -83,7 +83,9 @@ int main(void)
     /* USER CODE BEGIN 2 */
     // Ensure all LEDs are off at start
     turn_off_all_leds();
-    lcd_putstring("Task 2 ez");
+    lcd_putstring("Task 2");
+    lcd_command(LINE_TWO);
+    lcd_putstring("LED Pattern");
     // Start the timer interrupt
     HAL_TIM_Base_Start_IT(&htim16);
     /* USER CODE END 2 */
