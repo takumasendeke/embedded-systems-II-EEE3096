@@ -36,6 +36,11 @@ void turn_off_all_leds(void)
 {
     /* TODO: Iterate through the LED arrays and turn off all LEDs */
 
+	for (i = 0; i < 8; i++){
+		HAL_GPIO_WritePin(led_ports[0], led_pins[i], GPIO_PIN_RESET);
+	}
+
+
 }
 
 void update_led_pattern(void)
@@ -45,6 +50,13 @@ void update_led_pattern(void)
     // 2. Turn on the current LED
     // 3. Update the current_led index based on direction
     // 4. Handle direction reversal at the edges (without duplicating states)
+
+	for (i = 0; i < 8; i += direction){
+			if (i == 7){ direction = -1;}
+			if (i == 0){ direction = 1; }
+
+
+		}
 
 }
 /* USER CODE END 0 */
