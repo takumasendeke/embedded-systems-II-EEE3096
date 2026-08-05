@@ -47,7 +47,7 @@ void change_timer_period(uint32_t new_period_ms);
 /* USER CODE BEGIN 0 */
 void turn_off_all_leds(void){
 	// TODO: Iterate through the LED array. Set all pins to GPIO_PIN_RESET.
-	for (uint8 i = 0; i < 8; i++){
+	for (uint8_t i = 0; i < 8; i++){
 		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
 	}
 }
@@ -57,6 +57,18 @@ void update_led_pattern(void){
 	// TODO: Turn on the specific LED at index 'current_led'.
 	// TODO: Increment or decrement 'current_led' based on 'direction'.
 	// TODO: Reverse 'direction' when reaching the ends (0 or 7).
+	turn_off_all_leds();
+
+	HAL_GPIO_WritePin(led_ports[current_led], led_pins[current_led], GPIO_PIN_SET);
+	current_led += direction;
+
+	if(current_led == 7){
+		direction = -1;
+	}
+
+	if(current_led == 0){
+		direction = 1;
+	}
 }
 
 void change_timer_period(uint32_t new_period_ms){
