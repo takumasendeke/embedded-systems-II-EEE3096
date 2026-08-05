@@ -10,6 +10,7 @@
 #include "stm32f0xx.h"
 #include <stdint.h>
 #include "lcd_stm32f0.h"
+#include <math.h>
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim16;
@@ -73,12 +74,18 @@ void update_led_pattern(void){
 
 void change_timer_period(uint32_t new_period_ms){
 	// TODO: Calculate the new ARR value using your formula.
-	// Note: Timer clock is 1000 Hz (Prescaler is 7999).
-	uint32_t new_arr = 0; // Replace 0 with your calculation.
+	// Note: Timer clock is 1000 Hz (Prescalar is 7999).
+
+	float_t freq = 1 / ((float)new_period_ms / 1000);
+	float_t new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
+
+	uint32_t new_arr = (uint32_t)new_arr_float; // Replace 0 with your calculation.
 
 	// TODO: Update the TIM16 ARR register directly.
+	TIM16->ARR = new_arr;
 
 	// TODO: Reset the TIM16 CNT register to 0.
+	TIM16->CNT = 0;
 
 	// Store the new ARR value for reference
 	current_arr = new_arr;
