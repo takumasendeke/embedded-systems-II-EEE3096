@@ -25,7 +25,7 @@ GPIO_TypeDef* led_ports[8] = {GPIOB, GPIOB, GPIOB, GPIOB,GPIOB, GPIOB, GPIOB, GP
 uint16_t led_pins[8] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3,GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
 
 // TODO: Define your debounce delay based on your oscilloscope measurement
-#define DEBOUNCE_MS 20
+#define DEBOUNCE_MS 50
 uint32_t last_button_press_time = 0;
 
 // Speed state: 0 = slow (1s), 1 = fast (0.5s)
@@ -76,7 +76,7 @@ void change_timer_period(uint32_t new_period_ms){
 	// TODO: Calculate the new ARR value using your formula.
 	// Note: Timer clock is 1000 Hz (Prescalar is 7999).
 
-	float_t freq = 1 / ((float)new_period_ms / 1000);
+	float_t freq = 1 / ((float)new_period_ms / 1000); // convert ms -> s, /1000
 	float_t new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
 
 	uint32_t new_arr = (uint32_t)new_arr_float; // Replace 0 with your calculation.
@@ -93,16 +93,32 @@ void change_timer_period(uint32_t new_period_ms){
 
 void handle_button_press(void){
 	// TODO: Get the current system tick using HAL_GetTick().
+	uint32_t currentTime = HAL_GetTick(); // provides time in ms
 
 	// TODO: Check the time elapsed since the last valid press.
 	// Compare the elapsed time against DEBOUNCE_MS.
+	uint32_t elapsedTime = currentTime - last_button_press_time;
 
-	// TODO: Read the PA0 button state. The button is active low.
+	if (elapsedTime >= DEBOUNCE_MS){
+		// TODO: Read the PA0 button state. The button is active low.
 
-	// TODO: If a valid debounced press occurs:
-	// 1. Update last_button_press_time.
-	// 2. Toggle speed_state between 0 and 1.
-	// 3. Call change_timer_period() with 500 or 1000.
+		// Check when button pin 0 is ground (not high) == pressed
+		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) != GPIO_PIN_SET){
+		// TODO: If a valid debounced press occurs:
+		// 1. Update last_button_press_time.
+		// 2. Toggle speed_state between 0 and 1.
+		// 3. Call change_timer_period() with 500 or 1000.
+			last_button_press_time = HAL_GetTick();
+
+			if (speed_state == 1){
+				speed_state = 0;
+				change_timer_period(1000);
+			} else {
+				speed_state = 1;
+				change_timer_period(500);
+			}
+		}
+	}
 }
 /* USER CODE END 0 */
 
