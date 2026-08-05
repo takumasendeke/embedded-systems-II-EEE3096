@@ -20,13 +20,11 @@ volatile uint8_t current_led = 0;
 volatile int8_t direction = 1;
 
 // LED arrays
-GPIO_TypeDef* led_ports[8] = {GPIOB, GPIOB, GPIOB, GPIOB,
-GPIOB, GPIOB, GPIOB, GPIOB};
-uint16_t led_pins[8] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3,
-GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
+GPIO_TypeDef* led_ports[8] = {GPIOB, GPIOB, GPIOB, GPIOB,GPIOB, GPIOB, GPIOB, GPIOB};
+uint16_t led_pins[8] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3,GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7};
 
 // TODO: Define your debounce delay based on your oscilloscope measurement
-// #define DEBOUNCE_MS ???
+#define DEBOUNCE_MS 20
 uint32_t last_button_press_time = 0;
 
 // Speed state: 0 = slow (1s), 1 = fast (0.5s)
@@ -49,6 +47,9 @@ void change_timer_period(uint32_t new_period_ms);
 /* USER CODE BEGIN 0 */
 void turn_off_all_leds(void){
 	// TODO: Iterate through the LED array. Set all pins to GPIO_PIN_RESET.
+	for (uint8 i = 0; i < 8; i++){
+		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
+	}
 }
 
 void update_led_pattern(void){
