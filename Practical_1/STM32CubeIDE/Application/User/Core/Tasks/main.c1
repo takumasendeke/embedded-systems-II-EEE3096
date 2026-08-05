@@ -65,7 +65,7 @@ int main(void){
   MX_TIM16_Init();
 
   /* USER CODE BEGIN 2 */
-  lcd_putstring("Task 2");
+  lcd_putstring("Task 1");
   lcd_command(LINE_TWO);
   lcd_putstring("1Hz Clock cycle");
   // Start TIM16 in interrupt mode
