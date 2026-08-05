@@ -28,6 +28,13 @@ uint16_t led_pins[8] = {GPIO_PIN_0, GPIO_PIN_1, GPIO_PIN_2, GPIO_PIN_3,GPIO_PIN_
 #define DEBOUNCE_MS 50
 uint32_t last_button_press_time = 0;
 
+// Last state of button press for edge detection
+// 1 == not pressed, 0 == pressed
+uint8_t last_button_state = 1;
+
+// Current state of button
+uint8_t current_button_state = 0;
+
 // Speed state: 0 = slow (1s), 1 = fast (0.5s)
 uint8_t speed_state = 0;
 
@@ -94,16 +101,18 @@ void change_timer_period(uint32_t new_period_ms){
 void handle_button_press(void){
 	// TODO: Get the current system tick using HAL_GetTick().
 	uint32_t currentTime = HAL_GetTick(); // provides time in ms
+	current_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
 
 	// TODO: Check the time elapsed since the last valid press.
 	// Compare the elapsed time against DEBOUNCE_MS.
 	uint32_t elapsedTime = currentTime - last_button_press_time;
 
+
 	if (elapsedTime >= DEBOUNCE_MS){
 		// TODO: Read the PA0 button state. The button is active low.
 
-		// Check when button pin 0 is ground (not high) == pressed
-		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) != GPIO_PIN_SET){
+		// Check when button pin 0 is pressed
+		if((current_button_state == 0) && (last_button_state == 1)){
 		// TODO: If a valid debounced press occurs:
 		// 1. Update last_button_press_time.
 		// 2. Toggle speed_state between 0 and 1.
@@ -118,6 +127,8 @@ void handle_button_press(void){
 				change_timer_period(500);
 			}
 		}
+
+		last_button_state = current_button_state;
 	}
 }
 /* USER CODE END 0 */
