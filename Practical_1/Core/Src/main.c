@@ -160,8 +160,13 @@ void mode1_update(void){
 
 void mode2_update(void){
     /* TODO: Implement the inverse running light sequence. All LEDs on except one. */
-	clear_all_leds();
+	turn_on_all_leds();
 
+	turn_off_led(current_led);
+	current_led += direction;
+
+	if (current_led == 7) {direction = -1;}
+	else if (current_led == 0) {direction = 1;}
 }
 
 void mode3_update(void)
