@@ -91,9 +91,9 @@ void turn_on_led(uint8_t index){
 	HAL_GPIO_WritePin(led_ports[index], led_pins[index], GPIO_PIN_SET);
 }
 
-void turn_off_led(uint8_t index)
-{
+void turn_off_led(uint8_t index){
     /* TODO: Set the specified LED pin to GPIO_PIN_RESET */
+	HAL_GPIO_WritePin(led_ports[index], led_pins[index], GPIO_PIN_RESET);
 }
 
 void change_timer_period(uint32_t new_period_ms)
