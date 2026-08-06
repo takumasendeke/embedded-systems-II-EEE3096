@@ -142,7 +142,9 @@ void set_mode(LED_Mode new_mode){
 
 void mode1_update(void){
     /* TODO: Implement the standard running light sequence (Task 3 logic) */
-	HAL_GPIO_WritePin(led_ports[current_led], led_pins[current_led], GPIO_PIN_SET);
+	clear_all_leds();
+
+	turn_on_led(current_led);
 	current_led += direction;
 
 	if (current_led == 7) {direction = -1;}
