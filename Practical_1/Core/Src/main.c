@@ -41,6 +41,12 @@ volatile int8_t direction = 1;
 uint32_t last_button_time[4] = {0, 0, 0, 0};
 uint8_t speed_state = 0;        // 0 = slow (1s), 1 = fast (0.5s)
 
+// start as pin sets to indicate button not pressed
+uint8_t last_sw0 = GPIO_PIN_SET;
+uint8_t last_sw1 = GPIO_PIN_SET;
+uint8_t last_sw2 = GPIO_PIN_SET;
+uint8_t last_sw3 = GPIO_PIN_SET;
+
 // Mode 3 state machine
 typedef enum {
     SPARKLE_IDLE = 0,
@@ -105,8 +111,8 @@ void turn_off_led(uint8_t index){
 
 void change_timer_period(uint32_t new_period_ms){
     /* TODO: Calculate the new ARR value based on the requested millisecond period */
-	float_t freq = 1 / ((float)new_period_ms / 1000); // convert ms -> s, /1000
-	float_t new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
+	float freq = 1 / ((float)new_period_ms / 1000); // convert ms -> s, /1000
+	float new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
 
 	uint32_t new_arr = (uint32_t)new_arr_float;
 
@@ -124,14 +130,59 @@ void handle_buttons(void)
     uint32_t now = HAL_GetTick();
 
     /* TODO: Read the state of all four buttons (PA0 to PA3) */
+    uint8_t current_sw0 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+    uint8_t current_sw1 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_1);
+    uint8_t current_sw2 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_2);
+    uint8_t current_sw3 = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_3);
+
+    uint32_t elapsedTime_sw0 = now - last_button_time[0];
+    uint32_t elapsedTime_sw1 = now - last_button_time[1];
+    uint32_t elapsedTime_sw2 = now - last_button_time[2];
+    uint32_t elapsedTime_sw3 = now - last_button_time[3];
 
     /* TODO: Implement debounce logic for PA0. Toggle the timer speed between 500ms and 1000ms. */
-
+    if (elapsedTime_sw0 >= DEBOUNCE_MS){ // fix to allow edge detection
+		if ((last_sw0 == GPIO_PIN_SET) && (current_sw0 == GPIO_PIN_RESET)){
+			last_button_time[0] = HAL_GetTick();
+			if(current_period_ms == 1000){
+				change_timer_period(500);
+				current_period_ms = 500;
+			} else {
+				change_timer_period(1000);
+				current_period_ms = 1000;
+			}
+		}
+		last_sw0 = current_sw0;
+    }
     /* TODO: Implement debounce logic for PA1. Call set_mode(MODE_1). */
+    if (elapsedTime_sw1 >= DEBOUNCE_MS){
+    	if((last_sw1 == GPIO_PIN_SET) && (current_sw1 == GPIO_PIN_RESET)){
+    		last_button_time[1] = HAL_GetTick();
+
+    		set_mode(MODE_1);
+    	}
+    	last_sw1 = current_sw1;
+    }
 
     /* TODO: Implement debounce logic for PA2. Call set_mode(MODE_2). */
+    if (elapsedTime_sw2 >= DEBOUNCE_MS){
+    	if ((last_sw2 == GPIO_PIN_RESET) && (current_sw2 == GPIO_PIN_SET)){
+    		last_button_time[2] = HAL_GetTick();
+
+    		set_mode(MODE_2);
+    	}
+    	last_sw2 = current_sw2;
+    }
 
     /* TODO: Implement debounce logic for PA3. Call set_mode(MODE_3). */
+    if (elapsedTime_sw3 >= DEBOUNCE_MS ){
+    	if((last_sw3 == GPIO_PIN_SET) && (current_sw3 == GPIO_PIN_RESET)){
+    		last_button_time[3] = HAL_GetTick();
+
+    		set_mode(MODE_3);
+    	}
+    	last_button_time[3] = current_sw3;
+    }
 }
 
 void set_mode(LED_Mode new_mode){
@@ -169,8 +220,7 @@ void mode2_update(void){
 	else if (current_led == 0) {direction = 1;}
 }
 
-void mode3_update(void)
-{
+void mode3_update(void){
     uint32_t now = HAL_GetTick();
 
     switch (sparkle_state) {
