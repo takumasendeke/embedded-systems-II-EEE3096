@@ -68,6 +68,7 @@ void TIM16_IRQHandler(void);
 
 /* USER CODE BEGIN PFP */
 void clear_all_leds(void);
+void turn_on_all_leds(void); // added for ease of implementation in Mode 2
 void turn_on_led(uint8_t index);
 void turn_off_led(uint8_t index);
 void change_timer_period(uint32_t new_period_ms);
@@ -83,6 +84,12 @@ void clear_all_leds(void){
     /* TODO: Iterate through the LED arrays and set all pins to GPIO_PIN_RESET */
 	for (uint8_t i = 0; i < 8; i++){
 		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
+	}
+}
+
+void turn_on_all_leds(void){
+	for (uint8_t i = 0; i < 8; i++){
+		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_SET);
 	}
 }
 
@@ -151,9 +158,10 @@ void mode1_update(void){
 	else if (current_led == 0) {direction = 1;}
 }
 
-void mode2_update(void)
-{
+void mode2_update(void){
     /* TODO: Implement the inverse running light sequence. All LEDs on except one. */
+	clear_all_leds();
+
 }
 
 void mode3_update(void)
