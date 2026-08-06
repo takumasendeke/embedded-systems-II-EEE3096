@@ -79,17 +79,16 @@ void mode3_update(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-void clear_all_leds(void)
-{
+void clear_all_leds(void){
     /* TODO: Iterate through the LED arrays and set all pins to GPIO_PIN_RESET */
 	for (uint8_t i = 0; i < 8; i++){
 		HAL_GPIO_WritePin(led_ports[i], led_pins[i], GPIO_PIN_RESET);
 	}
 }
 
-void turn_on_led(uint8_t index)
-{
+void turn_on_led(uint8_t index){
     /* TODO: Set the specified LED pin to GPIO_PIN_SET */
+	HAL_GPIO_WritePin(led_ports[index], led_pins[index], GPIO_PIN_SET);
 }
 
 void turn_off_led(uint8_t index)
