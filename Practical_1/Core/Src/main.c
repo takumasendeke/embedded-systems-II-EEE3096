@@ -96,13 +96,19 @@ void turn_off_led(uint8_t index){
 	HAL_GPIO_WritePin(led_ports[index], led_pins[index], GPIO_PIN_RESET);
 }
 
-void change_timer_period(uint32_t new_period_ms)
-{
+void change_timer_period(uint32_t new_period_ms){
     /* TODO: Calculate the new ARR value based on the requested millisecond period */
 
+	float_t freq = 1 / ((float)new_period_ms / 1000); // convert ms -> s, /1000
+	float_t new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
+
+	uint32_t new_arr = (uint32_t)new_arr_float;
+
     /* TODO: Update the TIM16 ARR register directly */
+	TIM16 -> ARR = new_arr;
 
     /* TODO: Reset the TIM16 CNT register to 0 */
+	TIM16 -> CNT = 0;
 
     current_period_ms = new_period_ms;
 }
