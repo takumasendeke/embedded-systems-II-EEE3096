@@ -98,7 +98,6 @@ void turn_off_led(uint8_t index){
 
 void change_timer_period(uint32_t new_period_ms){
     /* TODO: Calculate the new ARR value based on the requested millisecond period */
-
 	float_t freq = 1 / ((float)new_period_ms / 1000); // convert ms -> s, /1000
 	float_t new_arr_float  = (1000 / freq) - 1; // HCLK/PSC = 1000
 
@@ -128,13 +127,17 @@ void handle_buttons(void)
     /* TODO: Implement debounce logic for PA3. Call set_mode(MODE_3). */
 }
 
-void set_mode(LED_Mode new_mode)
-{
+void set_mode(LED_Mode new_mode){
     current_mode = new_mode;
 
     /* TODO: Clear all LEDs to ensure a clean slate */
+    clear_all_leds();
 
     /* TODO: Reset mode-specific tracking variables (like current_led, direction, or sparkle_state) */
+    current_led = 0;
+    direction = 1;
+    sparkle_state = SPARKLE_IDLE;
+
 }
 
 void mode1_update(void)
