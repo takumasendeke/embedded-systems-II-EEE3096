@@ -230,11 +230,25 @@ void mode3_update(void){
             /* TODO: Store the indices of the active LEDs in the sparkle_leds_on array */
             /* TODO: Generate a random display duration between 100ms and 1500ms */
             /* TODO: Transition to SPARKLE_DISPLAY state */
+        	int rand_delay = rand() % 1500 + 100
+        	for (uint8_t i = 0; i < 8; i++) {
+        		int random_bit = rand() % 2;
+
+        		if (random_bit == 1){
+        			HAL_GPIO_WritePin(led_ports[i],led_pins[i], GPIO_PIN_SET);
+
+        			sparkle_leds_on[i] += i;
+        		}
+
+
+        	}
+
             break;
 
         case SPARKLE_DISPLAY:
             /* TODO: Wait for the random display duration to elapse using HAL_GetTick() */
             /* TODO: Once elapsed, transition to SPARKLE_TURN_OFF state */
+
             break;
 
         case SPARKLE_TURN_OFF:
